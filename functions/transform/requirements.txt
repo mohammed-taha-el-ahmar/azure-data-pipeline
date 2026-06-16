@@ -1,0 +1,2 @@
+azure-functions
+# TODO: add pyodbc (or pymssql) once the Azure SQL insert is implemented
