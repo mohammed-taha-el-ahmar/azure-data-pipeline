@@ -6,7 +6,8 @@
       "type": "blobTrigger",
       "direction": "in",
       "path": "raw/{name}",
-      "connection": "AzureWebJobsStorage"
+      "connection": "DataLakeStorage",
+      "source": "EventGrid"
     }
   ]
 }

@@ -1,27 +1,32 @@
 {
   "name": "CopyApiToADLS",
   "properties": {
-    "description": "Copies the latest payload from the source REST API into the 'raw' container in ADLS Gen2. Requires a REST linked service (source) and an ADLS Gen2 linked service (sink), plus the OpenMeteoApiDataset / ADLSRawDataset datasets referenced below, to be configured in the Data Factory authoring UI before this pipeline can be imported and run.",
+    "description": "Copies the latest weather payload from Open-Meteo into the 'raw' container in ADLS Gen2 via an HTTP linked service and JSON datasets.",
     "activities": [
       {
         "name": "CopyToRaw",
         "type": "Copy",
         "typeProperties": {
           "source": {
-            "type": "RestSource",
-            "httpRequestTimeout": "00:01:40",
-            "requestInterval": "00.00:00:00.010"
+            "type": "JsonSource",
+            "storeSettings": {
+              "type": "HttpReadSettings",
+              "requestMethod": "GET"
+            }
           },
           "sink": {
             "type": "JsonSink",
             "storeSettings": {
               "type": "AzureBlobFSWriteSettings"
+            },
+            "formatSettings": {
+              "type": "JsonWriteSettings"
             }
           }
         },
         "inputs": [
           {
-            "referenceName": "OpenMeteoApiDataset",
+            "referenceName": "OpenMeteoHttpDataset",
             "type": "DatasetReference"
           }
         ],

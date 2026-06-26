@@ -4,88 +4,493 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather Pipeline — Azure</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤️</text></svg>">
   <style>
     :root {
       --bg: #0f172a;
+      --surface: #1e293b;
       --card: #1e293b;
       --accent: #0078d4;
+      --accent-light: #38bdf8;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --error: #ef4444;
       --text: #e2e8f0;
       --muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.06);
+      --radius: 12px;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
       background: var(--bg);
       color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
       display: flex;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 2rem;
-      width: min(420px, 90vw);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-    h1 {
-      font-size: 0.95rem;
-      color: var(--muted);
-      margin: 0 0 1.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .metric {
-      display: flex;
       justify-content: space-between;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
-    .metric:last-child { border-bottom: none; }
-    .metric .label { color: var(--muted); }
-    .metric .value { font-weight: 600; color: var(--accent); }
-    .timestamp {
-      margin-top: 1rem;
+    header .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    header .brand svg { width: 28px; height: 28px; fill: var(--accent); }
+    header .brand h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    header .badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge--live { background: rgba(34,197,94,0.15); color: var(--success); }
+    .badge--demo { background: rgba(245,158,11,0.15); color: var(--warn); }
+    .badge--error { background: rgba(239,68,68,0.15); color: var(--error); }
+
+    /* Main content */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 1.5rem;
+    }
+
+    /* Hero metric */
+    .hero {
+      text-align: center;
+    }
+    .hero .city {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .hero .temp {
+      font-size: 4rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--accent-light);
+    }
+    .hero .temp span { font-size: 1.8rem; color: var(--muted); }
+    .hero .condition {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    /* Metric cards grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      width: min(700px, 100%);
+    }
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    .metric-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .metric-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .metric-card .unit {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .metric-card .icon {
+      font-size: 1.4rem;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Pipeline info panel */
+    .pipeline-info {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      width: min(700px, 100%);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+    .pipeline-info .item .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .pipeline-info .item .val {
+      font-size: 0.85rem;
+      color: var(--text);
+      font-weight: 500;
+      margin-top: 0.15rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 1rem 2rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* Loading / error states */
+    .state-message {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+    .state-message .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Settings modal */
+    .settings-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      padding: 0.4rem 0.7rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: border-color 0.2s;
+    }
+    .settings-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      width: min(440px, 90vw);
+    }
+    .modal h2 { font-size: 1rem; margin-bottom: 1rem; }
+    .modal label {
       font-size: 0.8rem;
       color: var(--muted);
-      text-align: right;
+      display: block;
+      margin-bottom: 0.3rem;
     }
+    .modal input {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .modal input:focus { outline: none; border-color: var(--accent); }
+    .modal .actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .modal button {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    .modal .btn-primary { background: var(--accent); color: #fff; }
+    .modal .btn-secondary { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Paris — Live Weather (Azure pipeline)</h1>
-    <div id="metrics">Loading…</div>
-    <div class="timestamp" id="timestamp"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79zM4 10.5H1v2h3zm9-9.95h-2V3.5h2zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41zm-3.45 13.19l1.79 1.8 1.41-1.41-1.8-1.79zM20 10.5v2h3v-2zm-8-5a6 6 0 00-6 6 6 6 0 006 6 6 6 0 006-6 6 6 0 00-6-6zm-1 16.95h2V19.5h-2zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41z"/>
+      </svg>
+      <h1>Weather Pipeline</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <span class="badge badge--demo" id="status-badge">DEMO</span>
+      <button class="settings-btn" id="settings-btn">⚙ Settings</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main>
+    <div id="content">
+      <div class="state-message">
+        <div class="spinner"></div>
+        <p>Connecting to pipeline…</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    Azure Data Factory → ADLS Gen2 → Azure Function → Azure SQL &nbsp;|&nbsp;
+    <a href="https://github.com" target="_blank">View source</a>
+  </footer>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2>⚙ Dashboard Settings</h2>
+      <label for="api-input">API endpoint URL</label>
+      <input id="api-input" type="url" placeholder="https://your-func-app.azurewebsites.net/api/latest" />
+      <label for="refresh-input">Auto-refresh interval (seconds, 0 = off)</label>
+      <input id="refresh-input" type="number" min="0" value="60" />
+      <div class="actions">
+        <button class="btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn-primary" id="modal-save">Save & Reload</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // TODO: replace with your Azure Function HTTP endpoint that queries
-    // Azure SQL for the latest row. Alternatively, embed a Power BI report.
-    const API_URL = "https://example.invalid/api/latest";
+    // ---------------------------------------------------------------------------
+    // Configuration — persisted in localStorage
+    // ---------------------------------------------------------------------------
+    const STORAGE_KEY = "azure_pipeline_dashboard";
+    const defaults = { apiUrl: "", refreshInterval: 60 };
 
-    async function load() {
+    function getConfig() {
       try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
+        return { ...defaults, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
+      } catch { return { ...defaults }; }
+    }
+    function saveConfig(cfg) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    }
 
-        document.getElementById("metrics").innerHTML = `
-          <div class="metric"><span class="label">Temperature</span><span class="value">${data.temperature_c} °C</span></div>
-          <div class="metric"><span class="label">Wind speed</span><span class="value">${data.wind_speed_kmh} km/h</span></div>
-          <div class="metric"><span class="label">Humidity</span><span class="value">${data.humidity_pct}%</span></div>
-        `;
-        document.getElementById("timestamp").textContent =
-          `Last updated: ${data.ingested_at}`;
+    // ---------------------------------------------------------------------------
+    // Demo / fallback data (used when no API URL is configured)
+    // ---------------------------------------------------------------------------
+    function demoData() {
+      const now = new Date();
+      return {
+        ingested_at: now.toISOString(),
+        latitude: 48.8566,
+        longitude: 2.3522,
+        temperature_c: (18 + Math.random() * 8).toFixed(1),
+        wind_speed_kmh: (5 + Math.random() * 20).toFixed(1),
+        humidity_pct: Math.round(40 + Math.random() * 40),
+      };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Render
+    // ---------------------------------------------------------------------------
+    function renderDashboard(data, isLive) {
+      const badge = document.getElementById("status-badge");
+      badge.textContent = isLive ? "LIVE" : "DEMO";
+      badge.className = `badge ${isLive ? "badge--live" : "badge--demo"}`;
+
+      const tempVal = parseFloat(data.temperature_c);
+      const condition = tempVal > 30 ? "Hot" : tempVal > 20 ? "Warm" : tempVal > 10 ? "Mild" : "Cold";
+
+      document.getElementById("content").innerHTML = `
+        <div class="hero">
+          <div class="city">📍 Paris, France (${data.latitude}°N, ${data.longitude}°E)</div>
+          <div class="temp">${parseFloat(data.temperature_c).toFixed(1)}<span>°C</span></div>
+          <div class="condition">${condition}</div>
+        </div>
+
+        <div class="grid">
+          <div class="metric-card">
+            <div class="icon">🌡️</div>
+            <div class="label">Temperature</div>
+            <div class="value">${parseFloat(data.temperature_c).toFixed(1)} <span class="unit">°C</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="icon">💨</div>
+            <div class="label">Wind Speed</div>
+            <div class="value">${parseFloat(data.wind_speed_kmh).toFixed(1)} <span class="unit">km/h</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="icon">💧</div>
+            <div class="label">Humidity</div>
+            <div class="value">${data.humidity_pct}<span class="unit">%</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="icon">📡</div>
+            <div class="label">Data Source</div>
+            <div class="value" style="font-size:0.95rem;">${isLive ? "Azure SQL" : "Demo mode"}</div>
+          </div>
+        </div>
+
+        <div class="pipeline-info">
+          <div class="item">
+            <div class="label">Last ingested</div>
+            <div class="val">${formatTime(data.ingested_at)}</div>
+          </div>
+          <div class="item">
+            <div class="label">Pipeline</div>
+            <div class="val">ADF → ADLS → Fn → SQL</div>
+          </div>
+          <div class="item">
+            <div class="label">Status</div>
+            <div class="val">${isLive ? "🟢 Connected" : "🟡 Demo mode"}</div>
+          </div>
+          <div class="item">
+            <div class="label">Refresh</div>
+            <div class="val">${getConfig().refreshInterval}s interval</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderError(msg) {
+      const badge = document.getElementById("status-badge");
+      badge.textContent = "ERROR";
+      badge.className = "badge badge--error";
+
+      document.getElementById("content").innerHTML = `
+        <div class="state-message">
+          <p style="color:var(--error);font-weight:600;">⚠ ${msg}</p>
+          <p style="margin-top:0.5rem;">Check the API URL in Settings or see the browser console.</p>
+        </div>
+      `;
+    }
+
+    function formatTime(iso) {
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString(undefined, {
+          month: "short", day: "numeric",
+          hour: "2-digit", minute: "2-digit", second: "2-digit"
+        });
+      } catch { return iso; }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Data fetching
+    // ---------------------------------------------------------------------------
+    async function loadData() {
+      const cfg = getConfig();
+
+      if (!cfg.apiUrl) {
+        // No API configured — show demo data
+        renderDashboard(demoData(), false);
+        return;
+      }
+
+      try {
+        const res = await fetch(cfg.apiUrl, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+        const data = await res.json();
+        renderDashboard(data, true);
       } catch (err) {
-        document.getElementById("metrics").textContent =
-          "Unable to load data — set API_URL in index.html.";
-        console.error(err);
+        console.error("Failed to fetch pipeline data:", err);
+        renderError(`Could not reach API — ${err.message}`);
       }
     }
 
-    load();
+    // ---------------------------------------------------------------------------
+    // Auto-refresh
+    // ---------------------------------------------------------------------------
+    let refreshTimer = null;
+    function startRefresh() {
+      stopRefresh();
+      const sec = getConfig().refreshInterval;
+      if (sec > 0) {
+        refreshTimer = setInterval(loadData, sec * 1000);
+      }
+    }
+    function stopRefresh() {
+      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Settings modal
+    // ---------------------------------------------------------------------------
+    const modal = document.getElementById("modal");
+    const apiInput = document.getElementById("api-input");
+    const refreshInput = document.getElementById("refresh-input");
+
+    document.getElementById("settings-btn").addEventListener("click", () => {
+      const cfg = getConfig();
+      apiInput.value = cfg.apiUrl;
+      refreshInput.value = cfg.refreshInterval;
+      modal.classList.add("active");
+    });
+
+    document.getElementById("modal-cancel").addEventListener("click", () => {
+      modal.classList.remove("active");
+    });
+
+    document.getElementById("modal-save").addEventListener("click", () => {
+      saveConfig({
+        apiUrl: apiInput.value.trim(),
+        refreshInterval: Math.max(0, parseInt(refreshInput.value, 10) || 0),
+      });
+      modal.classList.remove("active");
+      startRefresh();
+      loadData();
+    });
+
+    // Close modal on overlay click
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.remove("active");
+    });
+
+    // ---------------------------------------------------------------------------
+    // Boot
+    // ---------------------------------------------------------------------------
+    loadData();
+    startRefresh();
   </script>
 </body>
 </html>

@@ -90,16 +90,24 @@ resource "azurerm_linux_function_app" "transform" {
     application_stack {
       python_version = "3.12"
     }
+    cors {
+      allowed_origins = ["*"]
+    }
   }
 
   app_settings = {
-    # TODO: build the real connection string once the SQL DB is reachable,
-    # e.g. "Driver={ODBC Driver 18 for SQL Server};Server=tcp:<fqdn>,1433;
-    #       Database=weatherpipeline;Uid=sqladmin;Pwd=<password>;Encrypt=yes;"
-    SQL_CONNECTION_STRING = "TODO"
+    SQL_CONNECTION_STRING = "Driver={ODBC Driver 18 for SQL Server};Server=tcp:${azurerm_mssql_server.main.fully_qualified_domain_name},1433;Database=${azurerm_mssql_database.warehouse.name};Uid=sqladmin;Pwd=${var.sql_admin_password};Encrypt=yes;TrustServerCertificate=no;"
     ADLS_ACCOUNT_NAME     = azurerm_storage_account.datalake.name
   }
 }
 
-# TODO: front end — host frontend/index.html as a Static Web App, or behind
-# an Azure Function HTTP endpoint that queries Azure SQL.
+# ---------------------------------------------------------------------------
+# Static Web App — hosts frontend/index.html
+# ---------------------------------------------------------------------------
+resource "azurerm_static_web_app" "frontend" {
+  name                = "${var.project_name}-frontend"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  sku_tier            = "Free"
+  sku_size            = "Free"
+}

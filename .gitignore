@@ -1,0 +1,22 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local pipeline data
+.data/
+
+# Build artifacts
+**/build/
+*.zip
+
+# Editor / OS
+.vscode/
+.DS_Store
