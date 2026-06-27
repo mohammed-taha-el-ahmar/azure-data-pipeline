@@ -1,5 +1,8 @@
 # Azure Data Pipeline
 
+[![CI](https://github.com/mohammed-taha-el-ahmar/azure-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/mohammed-taha-el-ahmar/azure-data-pipeline/actions/workflows/ci.yml)
+
+
 > Part of a multi-cloud data engineering pattern — see `PORTFOLIO.md` in the
 > companion repos for the cross-cloud comparison. Same `shared/` ingest +
 > transform logic as `aws-data-pipeline`, `gcp-data-pipeline`, and
