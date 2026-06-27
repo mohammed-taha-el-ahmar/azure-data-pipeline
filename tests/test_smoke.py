@@ -5,13 +5,12 @@ and validate that the cloud-agnostic shared/ modules behave correctly.
 """
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pytest
 
 from shared.ingest import fetch_data, raw_object_key, to_raw_record
 from shared.transform import WAREHOUSE_TABLE_DDL, transform_record
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

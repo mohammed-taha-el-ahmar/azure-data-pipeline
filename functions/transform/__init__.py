@@ -18,8 +18,8 @@ try:
 except ImportError:
     pyodbc = None
 
-from shared.transform import transform_record
 from shared.ingest import to_raw_record
+from shared.transform import transform_record
 
 
 def main(myblob: func.InputStream):

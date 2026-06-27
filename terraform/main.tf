@@ -38,10 +38,10 @@ resource "azurerm_data_factory" "main" {
 resource "azurerm_mssql_server" "main" {
   name                         = "${var.project_name}-sql"
   resource_group_name          = azurerm_resource_group.main.name
-  location                      = azurerm_resource_group.main.location
-  version                        = "12.0"
-  administrator_login           = "sqladmin"
-  administrator_login_password  = var.sql_admin_password
+  location                     = azurerm_resource_group.main.location
+  version                      = "12.0"
+  administrator_login          = "sqladmin"
+  administrator_login_password = var.sql_admin_password
 }
 
 resource "azurerm_mssql_database" "warehouse" {
@@ -80,11 +80,11 @@ resource "azurerm_service_plan" "function" {
 
 resource "azurerm_linux_function_app" "transform" {
   name                       = "${var.project_name}-transform"
-  resource_group_name         = azurerm_resource_group.main.name
-  location                     = azurerm_resource_group.main.location
-  storage_account_name        = azurerm_storage_account.function.name
-  storage_account_access_key  = azurerm_storage_account.function.primary_access_key
-  service_plan_id             = azurerm_service_plan.function.id
+  resource_group_name        = azurerm_resource_group.main.name
+  location                   = azurerm_resource_group.main.location
+  storage_account_name       = azurerm_storage_account.function.name
+  storage_account_access_key = azurerm_storage_account.function.primary_access_key
+  service_plan_id            = azurerm_service_plan.function.id
 
   site_config {
     application_stack {
