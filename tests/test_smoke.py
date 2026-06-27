@@ -79,6 +79,7 @@ class TestRawObjectKey:
     def test_key_is_unique_across_calls(self):
         """Two successive calls should produce different keys (timestamp differs)."""
         import time
+
         k1 = raw_object_key()
         time.sleep(0.01)
         k2 = raw_object_key()
@@ -156,8 +157,14 @@ class TestWarehouseTableDDL:
         assert "weather_observations" in WAREHOUSE_TABLE_DDL
 
     def test_ddl_contains_required_columns(self):
-        for col in ("ingested_at", "latitude", "longitude",
-                    "temperature_c", "wind_speed_kmh", "humidity_pct"):
+        for col in (
+            "ingested_at",
+            "latitude",
+            "longitude",
+            "temperature_c",
+            "wind_speed_kmh",
+            "humidity_pct",
+        ):
             assert col in WAREHOUSE_TABLE_DDL, f"Column '{col}' missing from DDL"
 
 

@@ -39,8 +39,7 @@ def raw_object_key(prefix: str = "raw") -> str:
     """Date-partitioned key for the landing zone."""
     now = datetime.now(UTC)
     return (
-        f"{prefix}/year={now.year}/month={now.month:02d}/day={now.day:02d}/"
-        f"{now.isoformat()}.json"
+        f"{prefix}/year={now.year}/month={now.month:02d}/day={now.day:02d}/{now.isoformat()}.json"
     )
 
 
